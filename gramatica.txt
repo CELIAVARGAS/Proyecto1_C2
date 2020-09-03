@@ -1,0 +1,176 @@
+start with S;
+
+S ::= 
+    INFOS separador 
+    CF 
+    separador EXPRS1 separador
+    TNTS separador
+    GRAMATICAS 
+;
+
+// ********************************************** INFORMACION LENGUAJE ********************************************** 
+
+INFOS ::= 
+    INFOS INFO 
+    | INFO 
+    |error CF
+;
+
+INFO ::= 
+    NOMBRE1 
+    | VERSION1
+    | AUTOR1
+    | LANZAMIENTO1
+    | EXTENSION1
+;
+
+IDENTS ::= 
+    IDENTS IDENT
+    | IDENT
+;
+
+IDENT ::= 
+    identificador
+;
+
+NOMBRE1 ::=
+    nombre dosPuntos IDENTS puntoComa
+;
+
+VERSION1 ::= 
+    version dosPuntos numeroVersion puntoComa 
+;
+
+AUTOR1 ::=
+    autor dosPuntos IDENTS puntoComa
+;
+
+LANZAMIENTO1 ::=
+    lanzamiento dosPuntos numeroEntero puntoComa
+;
+
+EXTENSION1 ::=
+    extension dosPuntos IDENTS puntoComa 
+;
+
+// ********************************************** CODIGO FUENTE  ********************************************** 
+
+CF ::= 
+    texto
+    |error EXPRS1
+;
+
+// ********************************************** EXPRESIONES REGULARES  ********************************************** 
+EXPRS1 ::= 
+    EXPRS1 EXPRS
+    | EXPRS
+;
+EXPRS ::= 
+   ID igual ERS puntoComa
+    | error TNT
+;
+
+ID ::= 
+    identificador
+    |ignorar
+;
+
+ERS ::=
+    ERS barraO  ER
+    | ERS ER
+    | ER
+;
+
+ER ::=
+    EXP SIMBOLOS1
+    |EXP
+;
+
+EXP ::=
+    corcheteAbierto ERS corcheteCerrado
+    | parentesisAbierto ERS parentesisCerrado
+    | letras
+    | numeros
+    | caracter
+    | nuevaLinea
+    | espacioBlanco
+    | tabulador
+;
+
+SIMBOLOS1 ::=
+    muchasVeces
+    | unoOmas
+    | opcional
+;
+
+
+// ********************************************** TERMINALES  Y NO TERMINALES ********************************************** 
+TNTS ::= 
+    TNTS TNT
+    | TNT
+;
+
+TNT ::=
+    TIPOT SIMBOLOS puntoComa
+    |error GRAMATICA
+;
+
+TIPOT ::=
+    terminal1
+    | noTerminal
+;
+
+SIMBOLOS ::=
+    TIPOS IDENTIFICADORES1 
+    | IDENTIFICADORES1
+;
+
+IDENTIFICADORES1 ::=
+    IDENTIFICADORES1 coma IDENTIFICADOR1
+    | IDENTIFICADOR1
+;
+
+IDENTIFICADOR1 ::=
+    identificador 
+;
+
+TIPOS ::=
+    entero
+    | real
+    | cadena1
+;
+
+
+// ********************************************** GRAMATICA ********************************************** 
+GRAMATICAS ::= 
+    GRAMATICAS GRAMATICA 
+    |GRAMATICA
+;
+ 
+GRAMATICA ::=
+    identificador dosPuntos dosPuntos S2 puntoComa
+;
+
+S2 ::=
+    REGLAS 
+    |SEMANTICA 
+    |REGLAS SEMANTICA 
+;
+
+REGLAS ::=
+     REGLAS REGLA
+    | REGLA
+;
+
+REGLA ::=
+    identificador
+    |identificador dosPuntos identificador 
+;
+
+SEMANTICA ::= 
+    CF
+;
+
+
+
+

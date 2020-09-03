@@ -1,0 +1,443 @@
+package analisis;
+import java_cup.runtime.Symbol;
+import lexico.nodo;
+import analisis.auxiliar;
+import lexico.auxiliarLexico;
+import java.util.LinkedList;
+import lexico.errores;
+import lexico.arbol;
+import lexico.siguientes;
+import lexico.analisisArbol;
+import lexico.tablaSimbolos;
+import lexico.estado;
+import lexico.filaTablaAFD;
+import lexico.automataL;
+import lexico.mostrarDatos;
+
+parser code 
+{:
+        String caracterV ="0";
+        int numeroV= 0;
+        int contadorNodoHoja=0;
+        LinkedList<String> listaTokens = new LinkedList<>();
+        LinkedList<String> listaTerminales = new LinkedList<>();
+        LinkedList<String> listaNoTerminales = new LinkedList<>();
+        LinkedList<errores> listaErrores = new LinkedList<>();
+        LinkedList<tablaSimbolos> listaSimbolos = new LinkedList<>();
+
+        //errores que se recuperan 
+        public void syntax_error(Symbol s){
+                String error ="1. ERROR Sintactico en token: "+s.value+" en linea: " +(s.left + 1 )+" y columna: "+(s.right + 1)+"\n";
+        System.out.println(error);        
+        }
+    
+        //errores que ya no podemos recuperar
+        public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
+                String error ="2. ERROR Sintactico en token: "+s.value+" en linea: " +(s.left + 1 )+" y columna: "+(s.right + 1)+"\n";
+        System.out.println(error);        
+        }
+:}
+
+terminal    
+        nombre, version, autor, lanzamiento, extension, entero, real , cadena1 ,terminal1 , noTerminal , 
+        corcheteAbierto , corcheteCerrado , parentesisAbierto , parentesisCerrado ,
+        coma , igual , dosPuntos , puntoComa , separador , identificador , numeroEntero, numeroVersion ,
+        opcional ,muchasVeces, unoOmas , barraO , ignorar , numeros , letras , nuevaLinea , 
+        tabulador , espacioBlanco , caracter , texto 
+;
+
+
+nonterminal    
+        S, INFOS, INFO, NOMBRE1, VERSION1, AUTOR1, LANZAMIENTO1, EXTENSION1, CF, ERS, ER,
+        EXP,  TNT, SIMBOLOS ,TIPOT , IDENTIFICADORES1,  TIPOS, GRAMATICA, REGLAS, 
+        REGLA, IDENTIFICADOR1,EXPRS, ID, EXPRS1,IDENT,TNTS, GRAMATICAS,SEMANTICA,S2,IDENTS
+;
+
+nonterminal Integer SIMBOLOS1;
+
+start with S;
+
+S ::= 
+    INFOS 
+    separador 
+    CF 
+    separador 
+    EXPRS1:exprs1 
+    separador
+    TNTS 
+    separador
+    GRAMATICAS 
+
+    {://de exprs1 obtenemos la lista de los automatas
+    :}
+;
+
+// ********************************************** INFORMACION LENGUAJE ********************************************** 
+
+INFOS ::= 
+    INFOS INFO 
+    | INFO 
+    |error CF
+;
+
+INFO ::= 
+    NOMBRE1 
+    | VERSION1
+    | AUTOR1
+    | LANZAMIENTO1
+    | EXTENSION1
+;
+
+IDENTS ::= 
+    IDENTS IDENT
+    | IDENT
+;
+
+IDENT ::= 
+    identificador
+;
+
+NOMBRE1 ::=
+    nombre dosPuntos IDENTS puntoComa
+;
+
+VERSION1 ::= 
+    version dosPuntos numeroVersion puntoComa 
+;
+
+AUTOR1 ::=
+    autor dosPuntos IDENTS puntoComa
+;
+
+LANZAMIENTO1 ::=
+    lanzamiento dosPuntos numeroEntero puntoComa
+;
+
+EXTENSION1 ::=
+    extension dosPuntos IDENTS puntoComa 
+;
+
+// ********************************************** CODIGO FUENTE  ********************************************** 
+
+CF ::= 
+    texto
+    |error EXPRS1:exprs1
+    {:
+        RESULT =exprs1;
+    :}
+;
+
+// ********************************************** EXPRESIONES REGULARES  ********************************************** 
+EXPRS1 ::= //cada regla se concatena para que sea un arbol con las posibles expresiones
+    EXPRS1 EXPRS:n2
+    {://creamos el nodo  [.]
+            //agregamos exprs a la lista de automatas
+            //devolvemos la lista
+            
+    :}    
+    | EXPRS:exprs //solo devolvemos el valor
+    {: 
+            //agregamos  exprs a la lista de automatas
+            //devolvemos la lista
+                
+    :}    
+;
+
+EXPRS ::= 
+   ID:id1 igual ERS:ers puntoComa 
+    {: 
+        if(id1==null){
+            RESULT= null;
+        }else{
+            //por cada expresion se crea un arbol/automata asi se reconoce el tipo de dato que se lee y el nombre del
+            
+                if(ers==null ){//marcar como error semantico
+            
+                }else{//aqui se concatena al final con simbolo de aceptacion
+                    
+                    nodo n11 =  (nodo)ers;
+                    nodo n22 =  new nodo();
+                    contadorNodoHoja=contadorNodoHoja+1;
+                    n22.insertarNodoAceptacion(contadorNodoHoja);
+            
+                    nodo n = new nodo();
+                    n.insertarNodoConcatenacion(n11, n22);
+
+                    //enviamos dato como arbol para analizar y guardar
+                    String identificador1 = (String) id1;
+                    System.out.println("IDENTIFICADOR "+identificador1);
+                    LinkedList<siguientes> listaSiguientes = new LinkedList<>();
+                    LinkedList<filaTablaAFD> tablaAutomata = new LinkedList<>();
+                    LinkedList<estado> estadosRevisados1 = new LinkedList<>();
+                    LinkedList<estado> estadosSinRevisar1 = new LinkedList<>();
+                    automataL automata1 = new automataL(estadosRevisados1, estadosSinRevisar1, tablaAutomata);
+
+                    arbol a1= new arbol(n, identificador1, listaSiguientes,automata1);
+
+                    //se analiza el arbol y se crea un automata
+                    analisisArbol analisis= new analisisArbol();
+                    int contador = 0;
+                    analisis.analisisArbol(a1, listaSimbolos,contador);
+                    mostrarDatos m = new mostrarDatos();
+                    m. mostrarAutomata(a1);
+
+                    //limpiamos lista de simbolos
+                    listaSimbolos.clear();
+                    contadorNodoHoja=0;
+                }
+        }
+    :}    
+    | error TNT
+    {: 
+    :}    
+;
+
+ID ::= 
+    identificador: id1 
+    {:
+        String identificador1 = (String) id1;
+        auxiliarLexico a= new auxiliarLexico();
+        boolean encontrado=a.verificarNombreEnLista(listaTokens, identificador1);
+            
+        //verificacion de ide del token
+        if(encontrado==true){ //marcar error pues ya existe
+            String tipo = "SEMANTICO";
+            String token = id1.toString();
+            int fila =id1left;
+            int columna= id1right;
+            String otro= "Error en identificador de expresion regular, ya existe";
+            errores e  = new errores(tipo,fila,columna,token, otro);
+            listaErrores.add(e);
+           RESULT= null;
+
+        }else{
+            RESULT = id1.toString();
+        }
+
+    :}
+    | ignorar: ig1    
+    {: 
+        RESULT = ig1.toString();
+    :}
+;
+
+ERS ::=
+     ERS:n1 barraO  ER:n2 // aqui se unen nodos con |
+    {://creamos el nodo  [ | ] 
+            nodo n11 =  (nodo) n1;
+            nodo n22 =  (nodo) n2;
+            nodo n = new nodo();
+            n.insertarNodoO(n11,n22);
+
+            RESULT= n;
+    :}    
+    | ERS:n1 ER:n2 //aqui se unen nodos con la concatenacion
+    {://creamos el nodo  [.] 
+            nodo n11 =  (nodo) n1;
+            nodo n22 =  (nodo) n2;
+            nodo n = new nodo();
+            n.insertarNodoConcatenacion(n11,n22);
+
+            RESULT= n;
+    :}    
+    | ER:er //solo devolvemos nodo
+    {:
+            RESULT= er;
+    :}
+;
+
+ER ::=
+    EXP:exp SIMBOLOS1:num 
+    {://creamos el nodo  [+ * ?] 
+            nodo n1 =  (nodo) exp;
+            nodo n = new nodo();
+            switch(num){
+            case 1: 
+                n.insertarNodoUnoMas(n1);
+                break;
+            case 2:
+                n.insertarNodoCeroMas(n1);
+                break;
+            case 3: 
+                n.insertarNodoOpcion(n1);
+                break;
+            }
+            RESULT= n;
+    :}    
+    |EXP:exp //solo devolvemos el nodo
+    {: 
+            RESULT= exp;
+    :}    
+;
+
+EXP ::=
+    corcheteAbierto ERS:ers corcheteCerrado //devolver nodo
+    {:
+            RESULT= ers;
+    :}
+    | parentesisAbierto ERS:ers parentesisCerrado //devolver nodo
+    {:
+            RESULT= ers;
+    :}
+    | letras //nodo hoja
+    {:
+        nodo n = new nodo();
+        contadorNodoHoja=contadorNodoHoja+1;
+        n.insertarNodohoja(2,caracterV,contadorNodoHoja);
+
+        tablaSimbolos s = new tablaSimbolos();
+        s. insertarDato(3, caracterV);
+        listaSimbolos.add(s);
+        RESULT = n;
+    :}
+    | numeros //nodo hoja
+    {:
+        nodo n = new nodo();
+        contadorNodoHoja=contadorNodoHoja+1;
+        n.insertarNodohoja(1,caracterV,contadorNodoHoja);
+
+        tablaSimbolos s = new tablaSimbolos();
+        s. insertarDato(2, caracterV);
+        listaSimbolos.add(s);
+
+        RESULT = n;
+    :}
+    | caracter:c //nodo hoja
+    {:
+        auxiliar a = new auxiliar();
+        String caracterN =a.quitarComillas(c.toString());
+        nodo n = new nodo();
+        contadorNodoHoja=contadorNodoHoja+1;
+        n.insertarNodohoja(6,caracterN,contadorNodoHoja);
+
+        tablaSimbolos s = new tablaSimbolos();
+        s. insertarDato(1, caracterN);
+        listaSimbolos.add(s);
+
+
+        RESULT = n;
+    :}
+    | nuevaLinea //nodo hoja
+    {:
+        nodo n = new nodo();
+        contadorNodoHoja=contadorNodoHoja+1;
+        n.insertarNodohoja(3,caracterV,contadorNodoHoja);
+
+        tablaSimbolos s = new tablaSimbolos();
+        s. insertarDato(6, caracterV);
+        listaSimbolos.add(s);
+
+        RESULT = n;
+    :}
+    | espacioBlanco //nodo hoja
+    {:
+        nodo n = new nodo();
+        contadorNodoHoja=contadorNodoHoja+1;
+        n.insertarNodohoja(4,caracterV,contadorNodoHoja);
+
+        tablaSimbolos s = new tablaSimbolos();
+        s. insertarDato(4, caracterV);
+        listaSimbolos.add(s);
+
+       RESULT = n;
+    :}
+    | tabulador //nodo hoja
+    {:
+        nodo n = new nodo();
+        contadorNodoHoja=contadorNodoHoja+1;
+        n.insertarNodohoja(5,caracterV,contadorNodoHoja);
+
+        tablaSimbolos s = new tablaSimbolos();
+        s. insertarDato(5, caracterV);
+        listaSimbolos.add(s);
+
+        RESULT = n;
+    :}
+;
+
+SIMBOLOS1 ::= //solo devolvemos numero clave de cada simbolo
+     unoOmas:u
+    {:
+            RESULT=new Integer(1);
+    :}
+    |muchasVeces :m
+    {:
+            RESULT=new Integer(2);
+    :}
+
+    | opcional:o
+    {:
+            RESULT=new Integer(3);
+    :}
+;
+
+
+// ********************************************** TERMINALES  Y NO TERMINALES ********************************************** 
+TNTS ::= 
+    TNTS TNT
+    | TNT
+;
+
+TNT ::=
+    TIPOT SIMBOLOS puntoComa
+    |error GRAMATICA
+;
+
+TIPOT ::=
+    terminal1
+    | noTerminal
+;
+
+SIMBOLOS ::=
+    TIPOS IDENTIFICADORES1 
+    | IDENTIFICADORES1
+;
+
+IDENTIFICADORES1 ::=
+    IDENTIFICADORES1 coma IDENTIFICADOR1
+    | IDENTIFICADOR1
+;
+
+IDENTIFICADOR1 ::=
+    identificador 
+;
+
+TIPOS ::=
+    entero
+    | real
+    | cadena1
+;
+
+
+// ********************************************** GRAMATICA ********************************************** 
+GRAMATICAS ::= 
+    GRAMATICAS GRAMATICA 
+    |GRAMATICA
+;
+ 
+GRAMATICA ::=
+    identificador dosPuntos dosPuntos S2 puntoComa
+;
+
+S2 ::=
+    REGLAS 
+    |SEMANTICA 
+    |REGLAS SEMANTICA 
+;
+
+REGLAS ::=
+     REGLAS REGLA
+    | REGLA
+;
+
+REGLA ::=
+    identificador
+    |identificador dosPuntos identificador 
+;
+
+SEMANTICA ::= 
+    CF
+;
+
+
+
