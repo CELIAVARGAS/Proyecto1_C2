@@ -23,6 +23,7 @@ import static pantallas.PRINCIPAL.areaTxtErrores;
 import static pantallas.PRINCIPAL.pestañas;
 import static pantallas.PRINCIPAL.tabbedPaneArchivos;
 import analisis.generadorLexicoSintactico;
+import p1_comp2.P1_COMP2;
 
 /**
  *
@@ -54,7 +55,7 @@ public class lecturaArchivo {
                 JScrollPane jsp = new JScrollPane(areat) {
                     @Override
                     public Dimension getPreferredSize() {
-                        return new Dimension(930, 500);
+                        return new Dimension(840, 500);
                     }
                 };
                 jsp.setRowHeaderView(n);
@@ -124,48 +125,11 @@ public class lecturaArchivo {
         return nombreA;
     }
 
-    public  void analizarCodigoLenguaje(int indice) {
+    public void analizarCodigoLenguaje(int indice) {
         pestaña p = pestañas.get(indice);
         String dato = p.getAreaTxt().getText();
         generadorLexicoSintactico g = new generadorLexicoSintactico();
         System.out.println(dato);
-        g.analisisCodigoLen(" \n" +
-"nombre: java;\n" +
-"version: 11.0.7;\n" +
-"autor: sun Microsystems;\n" +
-"lanzamiento: 1996;\n" +
-"extension: java ;\n" +
-"\n" +
-"%% \n" +
-"List<String> listString=new ArrayList<>();\n" +
-"public void addString(String valor){\n" +
-"listString.add(valor);\n" +
-"}\n" +
-"public Integer suma(Integer numero1,Integer numero2){\n" +
-"return numero1+numero2;\n" +
-"}\n" +
-"\n" +
-"%% \n" +
-"palabra = [a-z]+;\n" +
-"entero = [0-9]+;\n" +
-"real = [0-9]+((.)[0-9]+)?;\n" +
-"más = “+”;\n" +
-"menos = “-”;\n" +
-"& = [\\n\\t]; \n" +
-"\n" +
-"%% \n" +
-"terminal por, div;\n" +
-"terminal más, menos;\n" +
-"terminal entero;\n" +
-"no terminal A, B;\n" +
-"no terminal S;\n" +
-"\n" +
-"%%\n" +
-"S :: E:val {printf(“Resultado = %d”,val);};\n" +
-"E :: E:val menos E:val2 {RESULT=val - val2;};\n" +
-"E :: E:val mas E:val2 {RESULT=val + val2;};\n" +
-"E :: E:val por E:val2 {RESULT=val * val2;};\n" +
-"E :: E:val div E:val2 {RESULT=val / val2;};\n" +
-"E :: entero:val {RESULT=val;};");
+        g.analisisCodigoLen(dato);
     }
 }

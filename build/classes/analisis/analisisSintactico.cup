@@ -13,6 +13,10 @@ import lexico.estado;
 import lexico.filaTablaAFD;
 import lexico.automataL;
 import lexico.mostrarDatos;
+import analisis.infoL;
+import sintactico.lenguaje;
+import sintactico.tokensLeidos;
+import javax.swing.JOptionPane;
 
 parser code 
 {:
@@ -20,22 +24,120 @@ parser code
         int numeroV= 0;
         int contadorNodoHoja=0;
         LinkedList<String> listaTokens = new LinkedList<>();
-        LinkedList<String> listaTerminales = new LinkedList<>();
-        LinkedList<String> listaNoTerminales = new LinkedList<>();
+        LinkedList<String> listaIds = new LinkedList<>();
+        LinkedList<String> listaIds1 = new LinkedList<>();
+        LinkedList<arbol> arboles = new LinkedList<>();
         LinkedList<errores> listaErrores = new LinkedList<>();
         LinkedList<tablaSimbolos> listaSimbolos = new LinkedList<>();
+        LinkedList<infoL> infoLengs = new LinkedList<>();
+        LinkedList<tokensLeidos> listaTokensLeidos = new LinkedList<>();
+        String nombreL="";
 
         //errores que se recuperan 
         public void syntax_error(Symbol s){
                 String error ="1. ERROR Sintactico en token: "+s.value+" en linea: " +(s.left + 1 )+" y columna: "+(s.right + 1)+"\n";
         System.out.println(error);        
+            String tipo = "Sintactico";
+            String token = (String) s.value;
+            int fila =s.left+1;
+            int columna= s.right+1;
+            String otro= "Error en el simbolo ";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
         }
     
         //errores que ya no podemos recuperar
         public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
                 String error ="2. ERROR Sintactico en token: "+s.value+" en linea: " +(s.left + 1 )+" y columna: "+(s.right + 1)+"\n";
         System.out.println(error);        
+            String tipo = "Sintactico";
+            String token = (String) s.value;
+            int fila =s.left+1;
+            int columna= s.right+1;
+            String otro= "Error en el simbolo ";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
         }
+
+        public boolean revisarDato(infoL info){
+            boolean encontrado=false;
+            String columnaBuscar= info.getColumna();
+            for(int i =0; i< infoLengs.size(); i++){
+                String columna = infoLengs.get(i).getColumna();
+                if(columna.equals(columnaBuscar)){
+                    encontrado=true;
+                    break;
+                }else{
+                    encontrado=false;        
+                }
+            }
+            return encontrado;
+        }
+
+      public boolean revisarNombre(){
+            boolean encontrado=false;
+            for(int i =0; i< infoLengs.size(); i++){
+                String columna = infoLengs.get(i).getColumna();
+                if(columna.equals("nombre")){
+                    encontrado=true;
+                    break;
+                }else{
+                    encontrado=false;        
+                }
+            }
+            return encontrado;
+        }
+
+        public boolean buscarIdTNT(String valor ){
+            boolean encontrado=false;
+            for(int i =0; i< listaIds.size(); i++){
+                String columna = listaIds.get(i);
+                if(columna.equals(valor)){
+                    encontrado=true;
+                    break;
+                }else{
+                    encontrado=false;        
+                }
+            }
+            return encontrado;
+        }
+        
+        public boolean verificarIDS(){
+            boolean encontrado=false;
+            for(int i =0; i< listaIds1.size(); i++){
+                String valor = listaIds1.get(i);
+                if(listaTokens.contains(valor)){
+                    encontrado=true;
+                }else{
+                    System.out.println("No se encontro el id del terminal "+valor);
+                    encontrado=false;        
+                    break;
+                }
+            }
+            return encontrado;
+        }
+
+    public void verifiarLenguaje(String nombre, lenguaje l) {
+        //antes verificar si hay errores
+        if(pantallas.PRINCIPAL.listaErroresGeneral.isEmpty()==true){//no hay errores
+            for (int i = 0; i < p1_comp2.P1_COMP2.listaLeguajes.size(); i++) {
+                String nombreL2 = p1_comp2.P1_COMP2.listaLeguajes.get(i).getNombreLenguaje();
+                if (nombreL2.equals(nombre)) {//si coincide eliminamos el anterior               
+                    p1_comp2.P1_COMP2.listaLeguajes.remove(i);
+                    System.out.println("ELIMINANDO LENGUAJE ANTERIOR");
+                } else {
+                }
+            }
+            //agregamos el lenguaje ya habiendo eliminado o no el lenguaje similar cargado anterior
+            p1_comp2.P1_COMP2.listaLeguajes.add(l);
+            JOptionPane.showMessageDialog(null, "Se ha creado el lenguaje-> "+nombre);
+        }else{
+            //existen errores, no se agrega el lenguaje
+            //mostrar errores
+                errores error1 = new errores("Semantico", 0, 0, "-","No se agregara lenguaje, existe errores");
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+        }
+    }
 :}
 
 terminal    
@@ -58,7 +160,7 @@ nonterminal Integer SIMBOLOS1;
 start with S;
 
 S ::= 
-    INFOS 
+    INFOS:i 
     separador 
     CF 
     separador 
@@ -68,53 +170,173 @@ S ::=
     separador
     GRAMATICAS 
 
-    {://de exprs1 obtenemos la lista de los automatas
+    {://creamos el lenguaje
+        if(i==null){
+        //error semantico en infos
+                errores error1 = new errores("Semantico", 0, 0, "-","Los campos de la info del lenguaje no son correctos");
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+        }else{
+            //verificar si existe el campo nombre, devolver ese dato
+            boolean e= revisarNombre(); 
+            if(e==true){
+            //bien, se verifica el lenguaje
+                LinkedList<errores> listaErrores1 = new LinkedList<>();
+                lenguaje l = new lenguaje( nombreL, arboles,listaTokensLeidos, listaErrores1);
+                //si la lista de lenguajes ya contiene uno con el mismo nombre entonces s elimina y se carga este.
+
+                verifiarLenguaje(nombreL, l);
+
+            }else{
+            //error semantico, no viene campo nombre
+                errores error1 = new errores("Semantico", 0, 0, "-","No existe campo-> nombre de lenguaje");
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+            }
+        }
+        
     :}
 ;
 
 // ********************************************** INFORMACION LENGUAJE ********************************************** 
 
-INFOS ::= 
-    INFOS INFO 
-    | INFO 
+INFOS ::= //verificar si no se repite el dato
+    INFOS:is INFO:i1 
+    {:
+        infoL i = (infoL) i1;
+        boolean encontrado = revisarDato(i);
+        if(encontrado==true){
+        //error semantico
+            String tipo = "Semantico";
+            String token = i1.toString();
+            int fila =i1left;
+            int columna= i1right;
+            String otro= "Error se repiten valores de la informacion del lenguaje";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+            RESULT =null;
+        }else{
+        //agregar a lista
+            infoL is1 = (infoL) i;
+            infoLengs.add(is1);
+            RESULT = 1;
+        }
+    :}
+    | INFO:i1 
+    {:
+        infoL i = (infoL) i1;
+        boolean encontrado = revisarDato(i);
+        if(encontrado==true){
+            //error semantico
+
+            String tipo = "Semantico";
+            String token = i1.toString();
+            int fila =i1left;
+            int columna= i1right;
+            String otro= "Error se repiten valores de la informacion del lenguaje";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+            RESULT =null;
+        }else{
+        //agregar a lista
+            infoL is1 = (infoL) i;
+            infoLengs.add(is1);
+            RESULT = 1;
+        }
+    :}
     |error CF
+{:
+            String tipo = "Semantico";
+            String token = " ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en la estructura de informacion de lenguaje";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+:}
 ;
 
 INFO ::= 
-    NOMBRE1 
-    | VERSION1
-    | AUTOR1
-    | LANZAMIENTO1
-    | EXTENSION1
+    NOMBRE1:n 
+    {:
+        RESULT =n;
+    :}
+    | VERSION1:v
+    {:
+        RESULT =v;    
+    :}
+    | AUTOR1:a
+    {:
+        RESULT =a;        
+    :}
+    | LANZAMIENTO1:l
+    {:
+        RESULT =l;            
+    :}
+    | EXTENSION1:e
+    {:
+        RESULT =e;            
+    :}
 ;
 
 IDENTS ::= 
-    IDENTS IDENT
-    | IDENT
+    IDENTS:is IDENT:i
+    {:
+        RESULT =is+" "+i;        
+    :}
+    | IDENT:i
+    {:
+        RESULT =i;        
+    :}
 ;
 
 IDENT ::= 
-    identificador
+    identificador:i
+    {:
+        RESULT =i;        
+    :}
 ;
 
 NOMBRE1 ::=
-    nombre dosPuntos IDENTS puntoComa
+    nombre:c dosPuntos IDENTS:i1 puntoComa
+    {:
+        infoL i= new infoL(c.toString(), i1.toString());
+        nombreL = i1.toString();
+        RESULT =i;        
+    :}
 ;
 
 VERSION1 ::= 
-    version dosPuntos numeroVersion puntoComa 
+    version:c dosPuntos numeroVersion:v1 puntoComa 
+    {:
+        infoL i= new infoL(c.toString(), v1.toString());
+        RESULT =i;        
+    :}
 ;
 
 AUTOR1 ::=
-    autor dosPuntos IDENTS puntoComa
+    autor:c dosPuntos IDENTS:i1 puntoComa
+    {:
+        infoL i= new infoL(c.toString(), i1.toString());
+        RESULT =i;        
+    :}
 ;
 
 LANZAMIENTO1 ::=
-    lanzamiento dosPuntos numeroEntero puntoComa
+    lanzamiento:c dosPuntos numeroEntero:n1 puntoComa
+    {:
+        infoL i= new infoL(c.toString(), n1.toString());
+        RESULT =i;        
+    :}
+
 ;
 
 EXTENSION1 ::=
-    extension dosPuntos IDENTS puntoComa 
+    extension:c dosPuntos IDENTS:e1 puntoComa 
+    {:
+        infoL i= new infoL(c.toString(), e1.toString());
+        RESULT =i;        
+    :}
 ;
 
 // ********************************************** CODIGO FUENTE  ********************************************** 
@@ -123,23 +345,37 @@ CF ::=
     texto
     |error EXPRS1:exprs1
     {:
-        RESULT =exprs1;
+            String tipo = "Semantico";
+            String token =" ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en codigo java";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
     :}
 ;
 
 // ********************************************** EXPRESIONES REGULARES  ********************************************** 
 EXPRS1 ::= //cada regla se concatena para que sea un arbol con las posibles expresiones
-    EXPRS1 EXPRS:n2
-    {://creamos el nodo  [.]
-            //agregamos exprs a la lista de automatas
-            //devolvemos la lista
-            
+    EXPRS1 EXPRS:a2
+    {://Agregamos el arbol
+    if(a2==null){
+        //no se agrega el arbol
+    }else{
+        //agregamos el arbol
+                    arbol a =  (arbol)a2;
+                    arboles.add(a);
+        }            
     :}    
-    | EXPRS:exprs //solo devolvemos el valor
+    | EXPRS:a1 //solo devolvemos el valor
     {: 
-            //agregamos  exprs a la lista de automatas
-            //devolvemos la lista
-                
+        if(a1==null){
+            //no se agrega el arbol
+        }else{
+            //agregamos el arbol
+                    arbol a =  (arbol)a1;
+                    arboles.add(a);
+        }                            
     :}    
 ;
 
@@ -152,7 +388,7 @@ EXPRS ::=
             //por cada expresion se crea un arbol/automata asi se reconoce el tipo de dato que se lee y el nombre del
             
                 if(ers==null ){//marcar como error semantico
-            
+                    RESULT= null;            
                 }else{//aqui se concatena al final con simbolo de aceptacion
                     
                     nodo n11 =  (nodo)ers;
@@ -184,11 +420,19 @@ EXPRS ::=
                     //limpiamos lista de simbolos
                     listaSimbolos.clear();
                     contadorNodoHoja=0;
+                    RESULT= a1;
                 }
         }
     :}    
     | error TNT
     {: 
+            String tipo = "Semantico";
+            String token = " ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en estructura de expresiones regulares";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
     :}    
 ;
 
@@ -201,16 +445,18 @@ ID ::=
             
         //verificacion de ide del token
         if(encontrado==true){ //marcar error pues ya existe
-            String tipo = "SEMANTICO";
+
+            String tipo = "Semantico";
             String token = id1.toString();
             int fila =id1left;
             int columna= id1right;
-            String otro= "Error en identificador de expresion regular, ya existe";
-            errores e  = new errores(tipo,fila,columna,token, otro);
-            listaErrores.add(e);
-           RESULT= null;
+            String otro= "Error se repite el identificador ";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
+           RESULT= null;
         }else{
+            listaTokens.add(id1.toString());
             RESULT = id1.toString();
         }
 
@@ -379,27 +625,119 @@ TNTS ::=
 ;
 
 TNT ::=
-    TIPOT SIMBOLOS puntoComa
+    TIPOT:t SIMBOLOS:s puntoComa
+    {:
+        //verificar si terminal esta en tokens
+        if(t.toString().equals("terminal")){
+            boolean encontrado = verificarIDS();
+            if(encontrado==false){
+                //error no se encontro un terminal declarado, marcar error semantico
+                String tipo = "Semantico";
+                String token = " ";
+                int fila =0;
+                int columna= 0;
+                String otro= "Error existen terminales que no se declararon en E.R";
+                errores error1 = new errores(tipo, fila, columna, token,otro);
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+            }else{
+            //todos los terminales se habian declarado en ERS
+            }
+        }
+        //si es no terminal, ya se ha verificado que no se repitan
+        else{}
+        //limpiar listaDeIds
+        listaIds.clear();
+    :}
     |error GRAMATICA
-;
+{:
+            String tipo = "Semantico";
+            String token = " ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en estructura de gramatica";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+:};
 
 TIPOT ::=
-    terminal1
-    | noTerminal
+    terminal1:t1
+    {:
+        RESULT= t1;
+    :}
+    | noTerminal:t1
+    {:
+        RESULT= t1;
+    :}
 ;
 
 SIMBOLOS ::=
-    TIPOS IDENTIFICADORES1 
-    | IDENTIFICADORES1
+    IDENTIFICADORES1:i
+    {:
+        RESULT =i;
+    :}    
+    |TIPOS IDENTIFICADORES1:i
+    {:
+        RESULT =i;
+    :} 
+     
 ;
 
 IDENTIFICADORES1 ::=
-    IDENTIFICADORES1 coma IDENTIFICADOR1
-    | IDENTIFICADOR1
+    IDENTIFICADORES1 coma IDENTIFICADOR1:i
+    //verificar que no se repita el dato
+    {:
+        String valor = i.toString();
+        boolean encontrado = buscarIdTNT(valor);
+        if(encontrado==true){
+            String tipo = "Semantico";
+            String token = i.toString();
+            int fila =ileft;
+            int columna= iright;
+            String otro= "Error ya se ha declarado ese identificador";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+        //error semantico
+            RESULT=null;
+        }
+        else{
+            listaIds.add(i.toString());
+            listaIds1.add(i.toString());
+            RESULT =1;
+        }
+    :}
+    | IDENTIFICADOR1:i
+    //verificar que no se repita el dato
+    {:
+        String valor = i.toString();
+        boolean encontrado = buscarIdTNT(valor);
+        if(encontrado==true){
+        //error semantico
+            String tipo = "Semantico";
+            String token = i.toString();
+            int fila =ileft;
+            int columna= iright;
+            String otro= "Error ya se ha declarado ese identificador";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+            RESULT=null;
+        }
+        else{
+            listaIds.add(i.toString());
+            listaIds1.add(i.toString());
+            RESULT =1;
+        }
+    :}
 ;
 
 IDENTIFICADOR1 ::=
-    identificador 
+    identificador:i 
+    {:
+        RESULT =i;
+    :}
 ;
 
 TIPOS ::=

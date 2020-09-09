@@ -7,6 +7,7 @@ package sintactico;
 
 import java.util.LinkedList;
 import lexico.arbol;
+import lexico.errores;
 
 /**
  *
@@ -17,7 +18,8 @@ public class lenguaje {
     String nombreLenguaje;
     LinkedList<arbol> arboles;// cada arbol tiene nombre de lexema y su automata
     LinkedList<tokensLeidos> listaTokensLeidos;// lexemas leidos
-
+    LinkedList<errores> listaErrores ;
+    
     public String getNombreLenguaje() {
         return nombreLenguaje;
     }
@@ -41,5 +43,22 @@ public class lenguaje {
     public void setListaTokensLeidos(LinkedList<tokensLeidos> listaTokensLeidos) {
         this.listaTokensLeidos = listaTokensLeidos;
     }
+
+    public LinkedList<errores> getListaErrores() {
+        return listaErrores;
+    }
+
+    public void setListaErrores(LinkedList<errores> listaErrores) {
+        this.listaErrores = listaErrores;
+    }
+
+    public lenguaje(String nombreLenguaje, LinkedList<arbol> arboles, LinkedList<tokensLeidos> listaTokensLeidos, LinkedList<errores> listaErrores) {
+        this.nombreLenguaje = nombreLenguaje;
+        this.arboles = arboles;
+        this.listaTokensLeidos = listaTokensLeidos;
+        this.listaErrores = listaErrores;
+    }
+
+
 
 }

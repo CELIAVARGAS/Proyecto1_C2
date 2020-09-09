@@ -1,15 +1,22 @@
 package pantallas;
 
+import analisEntrada.evaluacionLexica;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.io.FileNotFoundException;
 import java.util.LinkedList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import lexico.errores;
+import static p1_comp2.P1_COMP2.listaLeguajes;
+
 /**
  *
  * @author esmeralda
@@ -20,6 +27,8 @@ public class PRINCIPAL extends javax.swing.JFrame {
      * Creates new form PRINCIPAL
      */
     public static LinkedList<pestaña> pestañas = new LinkedList<>();
+    public static LinkedList<errores> listaErroresGeneral = new LinkedList<>();
+    public static String nombreLenguajeOficial = "";
 
     public PRINCIPAL() {
         initComponents();
@@ -37,7 +46,7 @@ public class PRINCIPAL extends javax.swing.JFrame {
         areaTxtErrores = new javax.swing.JTextArea();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jLabel3 = new javax.swing.JLabel();
+        lblNombreLenguajeSeleccionado = new javax.swing.JLabel();
         btnBorrarPest = new javax.swing.JButton();
         jMenuBar1 = new javax.swing.JMenuBar();
         botonAbrir = new javax.swing.JMenu();
@@ -46,7 +55,7 @@ public class PRINCIPAL extends javax.swing.JFrame {
         botonGuardar = new javax.swing.JMenuItem();
         botonGuardarComo = new javax.swing.JMenuItem();
         botonSalir = new javax.swing.JMenuItem();
-        jMenu2 = new javax.swing.JMenu();
+        menuLenguajes = new javax.swing.JMenu();
         jMenu3 = new javax.swing.JMenu();
         botonCargarLenguajes = new javax.swing.JMenuItem();
         botonBorrarLenguajes = new javax.swing.JMenuItem();
@@ -74,7 +83,7 @@ public class PRINCIPAL extends javax.swing.JFrame {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(tabbedPaneArchivos)
+                .addComponent(tabbedPaneArchivos, javax.swing.GroupLayout.DEFAULT_SIZE, 847, Short.MAX_VALUE)
                 .addContainerGap())
         );
         jPanel2Layout.setVerticalGroup(
@@ -95,8 +104,8 @@ public class PRINCIPAL extends javax.swing.JFrame {
         jLabel2.setForeground(java.awt.Color.orange);
         jLabel2.setText("LENGUAJE SELECCIONADO");
 
-        jLabel3.setForeground(java.awt.Color.cyan);
-        jLabel3.setText("---");
+        lblNombreLenguajeSeleccionado.setForeground(java.awt.Color.cyan);
+        lblNombreLenguajeSeleccionado.setText("---");
 
         btnBorrarPest.setBackground(new java.awt.Color(252, 61, 61));
         btnBorrarPest.setForeground(java.awt.Color.white);
@@ -117,18 +126,17 @@ public class PRINCIPAL extends javax.swing.JFrame {
                     .addGroup(jPanel1Layout.createSequentialGroup()
                         .addComponent(jLabel2)
                         .addGap(20, 20, 20)
-                        .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 336, Short.MAX_VALUE)
-                        .addComponent(btnBorrarPest))
-                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(jPanel1Layout.createSequentialGroup()
-                        .addGap(71, 71, 71)
+                        .addComponent(lblNombreLenguajeSeleccionado, javax.swing.GroupLayout.PREFERRED_SIZE, 350, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 353, Short.MAX_VALUE)
+                        .addComponent(btnBorrarPest)
+                        .addGap(83, 83, 83)
                         .addComponent(jLabel1)
-                        .addGap(0, 0, Short.MAX_VALUE))
-                    .addComponent(jScrollPane1, javax.swing.GroupLayout.DEFAULT_SIZE, 320, Short.MAX_VALUE))
-                .addContainerGap())
+                        .addContainerGap(228, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane1)
+                        .addContainerGap())))
         );
         jPanel1Layout.setVerticalGroup(
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -137,7 +145,7 @@ public class PRINCIPAL extends javax.swing.JFrame {
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
                     .addComponent(jLabel2)
-                    .addComponent(jLabel3)
+                    .addComponent(lblNombreLenguajeSeleccionado)
                     .addComponent(btnBorrarPest))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -194,12 +202,31 @@ public class PRINCIPAL extends javax.swing.JFrame {
 
         jMenuBar1.add(botonAbrir);
 
-        jMenu2.setForeground(java.awt.Color.cyan);
-        jMenu2.setText("LEGUAJES");
-        jMenuBar1.add(jMenu2);
+        menuLenguajes.setForeground(java.awt.Color.cyan);
+        menuLenguajes.setText("LEGUAJES");
+        menuLenguajes.addMenuListener(new javax.swing.event.MenuListener() {
+            public void menuSelected(javax.swing.event.MenuEvent evt) {
+                menuLenguajesMenuSelected(evt);
+            }
+            public void menuDeselected(javax.swing.event.MenuEvent evt) {
+            }
+            public void menuCanceled(javax.swing.event.MenuEvent evt) {
+            }
+        });
+        menuLenguajes.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                menuLenguajesKeyPressed(evt);
+            }
+        });
+        jMenuBar1.add(menuLenguajes);
 
         jMenu3.setForeground(java.awt.Color.cyan);
         jMenu3.setText("EJECUTAR");
+        jMenu3.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jMenu3KeyPressed(evt);
+            }
+        });
 
         botonCargarLenguajes.setText("Cargar Lenguaje");
         botonCargarLenguajes.addActionListener(new java.awt.event.ActionListener() {
@@ -210,17 +237,51 @@ public class PRINCIPAL extends javax.swing.JFrame {
         jMenu3.add(botonCargarLenguajes);
 
         botonBorrarLenguajes.setText("Borrar Lenguaje");
+        botonBorrarLenguajes.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonBorrarLenguajesActionPerformed(evt);
+            }
+        });
         jMenu3.add(botonBorrarLenguajes);
 
         botonCompilar.setText("Compilar");
+        botonCompilar.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botonCompilarActionPerformed(evt);
+            }
+        });
         jMenu3.add(botonCompilar);
 
         jMenuBar1.add(jMenu3);
 
         jMenu4.setForeground(java.awt.Color.cyan);
         jMenu4.setText("VER");
+        jMenu4.addItemListener(new java.awt.event.ItemListener() {
+            public void itemStateChanged(java.awt.event.ItemEvent evt) {
+                jMenu4ItemStateChanged(evt);
+            }
+        });
+        jMenu4.addMenuKeyListener(new javax.swing.event.MenuKeyListener() {
+            public void menuKeyPressed(javax.swing.event.MenuKeyEvent evt) {
+                jMenu4MenuKeyPressed(evt);
+            }
+            public void menuKeyReleased(javax.swing.event.MenuKeyEvent evt) {
+            }
+            public void menuKeyTyped(javax.swing.event.MenuKeyEvent evt) {
+            }
+        });
+        jMenu4.addKeyListener(new java.awt.event.KeyAdapter() {
+            public void keyPressed(java.awt.event.KeyEvent evt) {
+                jMenu4KeyPressed(evt);
+            }
+        });
 
         botoTablaLALR.setText("Tabla LALR");
+        botoTablaLALR.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                botoTablaLALRActionPerformed(evt);
+            }
+        });
         jMenu4.add(botoTablaLALR);
 
         botonPila.setText("Pila");
@@ -276,7 +337,7 @@ public class PRINCIPAL extends javax.swing.JFrame {
         JScrollPane scrollA = new JScrollPane(areaA) {
             @Override
             public Dimension getPreferredSize() {
-                return new Dimension(930, 500);
+                return new Dimension(840, 500);
             }
         };
         scrollA.setRowHeaderView(n);
@@ -302,10 +363,39 @@ public class PRINCIPAL extends javax.swing.JFrame {
     }//GEN-LAST:event_btnBorrarPestActionPerformed
 
     private void botonCargarLenguajesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonCargarLenguajesActionPerformed
+
         int i = tabbedPaneArchivos.getSelectedIndex();
+        areaTxtErrores.setText("");
         if (i != -1) {
             lecturaArchivo l = new lecturaArchivo();
-             l.analizarCodigoLenguaje(i);
+            l.analizarCodigoLenguaje(i);
+            //mostrar en panel los lenguajes cargados
+            menuLenguajes.removeAll();;
+            for (int j = 0; j < listaLeguajes.size(); j++) {
+                String nombre = listaLeguajes.get(j).getNombreLenguaje();
+                JMenuItem subMenu = new JMenuItem(nombre);
+                subMenu.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.out.println("presionado");
+                        nombreLenguajeOficial = subMenu.getText();
+                        lblNombreLenguajeSeleccionado.setText(nombreLenguajeOficial);
+                    }
+                });
+                menuLenguajes.add(subMenu);
+            }
+            //mostrar errores si existen, limpiar lista
+            for (int j = 0; j < listaErroresGeneral.size(); j++) {
+                errores e = listaErroresGeneral.get(i);
+                String dato = "\n\nTIPO: " + e.getTipo() + "\n"
+                        + "TOKEN: " + e.getToken() + "\n"
+                        + "FILA: " + e.getFila() + "\n"
+                        + "COLUMNA: " + e.getColumnna() + "\n"
+                        + "DESCRIPCION: " + e.getOtro();
+                System.out.println(dato);
+                areaTxtErrores.append(dato);
+            }
+            listaErroresGeneral.clear();
         } else {
             JOptionPane.showMessageDialog(null, "Cargue un archivo .len para analizar");
         }
@@ -336,6 +426,86 @@ public class PRINCIPAL extends javax.swing.JFrame {
         this.dispose();
     }//GEN-LAST:event_botonSalirActionPerformed
 
+    private void menuLenguajesMenuSelected(javax.swing.event.MenuEvent evt) {//GEN-FIRST:event_menuLenguajesMenuSelected
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuLenguajesMenuSelected
+
+    private void menuLenguajesKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_menuLenguajesKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_menuLenguajesKeyPressed
+
+    private void jMenu3KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jMenu3KeyPressed
+
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenu3KeyPressed
+
+    private void botoTablaLALRActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botoTablaLALRActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_botoTablaLALRActionPerformed
+
+    private void jMenu4KeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jMenu4KeyPressed
+
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenu4KeyPressed
+
+    private void jMenu4MenuKeyPressed(javax.swing.event.MenuKeyEvent evt) {//GEN-FIRST:event_jMenu4MenuKeyPressed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenu4MenuKeyPressed
+
+    private void jMenu4ItemStateChanged(java.awt.event.ItemEvent evt) {//GEN-FIRST:event_jMenu4ItemStateChanged
+
+//        System.out.println("Presionado");
+        // TODO add your handling code here:
+    }//GEN-LAST:event_jMenu4ItemStateChanged
+
+    private void botonBorrarLenguajesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonBorrarLenguajesActionPerformed
+        if (nombreLenguajeOficial.equals("")) {
+            JOptionPane.showMessageDialog(null, "Seleccione un lenguaje para eliminar");
+        } else {
+            for (int i = 0; i < listaLeguajes.size(); i++) {
+                String nombreL = listaLeguajes.get(i).getNombreLenguaje();
+                if (nombreL.equals(nombreLenguajeOficial)) {
+                    listaLeguajes.remove(i);
+                    JOptionPane.showMessageDialog(null, "Se ha eliminado el lenguaje-> " + nombreLenguajeOficial);
+                } else {
+                }
+            }
+            lblNombreLenguajeSeleccionado.setText("-----");
+            //mostramos los lenguajes que quedan
+            menuLenguajes.removeAll();
+            for (int j = 0; j < listaLeguajes.size(); j++) {
+                String nombre = listaLeguajes.get(j).getNombreLenguaje();
+                JMenuItem subMenu = new JMenuItem(nombre);
+                subMenu.addActionListener(new ActionListener() {
+                    @Override
+                    public void actionPerformed(ActionEvent e) {
+                        System.out.println("presionado");
+                        nombreLenguajeOficial = subMenu.getText();
+                        lblNombreLenguajeSeleccionado.setText(nombreLenguajeOficial);
+                    }
+                });
+                menuLenguajes.add(subMenu);
+            }
+        }
+        // TODO add your handling code here:
+    }//GEN-LAST:event_botonBorrarLenguajesActionPerformed
+
+    private void botonCompilarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_botonCompilarActionPerformed
+        int i = tabbedPaneArchivos.getSelectedIndex();
+        areaTxtErrores.setText("");
+        if (i != -1) {
+            pestaña p = pestañas.get(i);
+            String dato = p.getAreaTxt().getText();
+            //procedemos a evlauar las cadenas de entrada 
+            evaluacionLexica e = new evaluacionLexica();
+            if (nombreLenguajeOficial.equals("")) {
+                JOptionPane.showMessageDialog(null, "Seleccione un lenguaje");
+            } else {
+                e.analisisLenguajeSeleccionado(dato, nombreLenguajeOficial);                
+            }
+        }
+    }//GEN-LAST:event_botonCompilarActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     public static javax.swing.JTextArea areaTxtErrores;
@@ -352,8 +522,6 @@ public class PRINCIPAL extends javax.swing.JFrame {
     private javax.swing.JButton btnBorrarPest;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
-    private javax.swing.JLabel jLabel3;
-    private javax.swing.JMenu jMenu2;
     private javax.swing.JMenu jMenu3;
     private javax.swing.JMenu jMenu4;
     private javax.swing.JMenuBar jMenuBar1;
@@ -361,6 +529,8 @@ public class PRINCIPAL extends javax.swing.JFrame {
     private javax.swing.JPanel jPanel1;
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JLabel lblNombreLenguajeSeleccionado;
+    private javax.swing.JMenu menuLenguajes;
     public static javax.swing.JTabbedPane tabbedPaneArchivos;
     // End of variables declaration//GEN-END:variables
 }

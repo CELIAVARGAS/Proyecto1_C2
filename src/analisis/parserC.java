@@ -19,6 +19,10 @@ import lexico.estado;
 import lexico.filaTablaAFD;
 import lexico.automataL;
 import lexico.mostrarDatos;
+import analisis.infoL;
+import sintactico.lenguaje;
+import sintactico.tokensLeidos;
+import javax.swing.JOptionPane;
 import java_cup.runtime.XMLElement;
 
 /** CUP v0.11b 20160615 (GIT 4ac7450) generated parser.
@@ -59,7 +63,7 @@ public class parserC extends java_cup.runtime.lr_parser {
     "\015\003\000\002\040\003\000\002\040\003\000\002\040" +
     "\003\000\002\033\004\000\002\033\003\000\002\016\005" +
     "\000\002\016\004\000\002\020\003\000\002\020\003\000" +
-    "\002\017\004\000\002\017\003\000\002\021\005\000\002" +
+    "\002\017\003\000\002\017\004\000\002\021\005\000\002" +
     "\021\003\000\002\026\003\000\002\022\003\000\002\022" +
     "\003\000\002\022\003\000\002\034\004\000\002\034\003" +
     "\000\002\023\007\000\002\036\003\000\002\036\003\000" +
@@ -109,13 +113,13 @@ public class parserC extends java_cup.runtime.lr_parser {
     "\007\uffea\010\uffea\025\uffea\026\uffea\027\uffea\036\uffea\001" +
     "\002\000\012\011\uffd3\012\uffd3\013\uffd3\027\uffd3\001\002" +
     "\000\004\027\uffcc\001\002\000\006\022\uffcd\025\uffcd\001" +
-    "\002\000\006\022\063\025\uffd0\001\002\000\004\025\065" +
-    "\001\002\000\004\027\053\001\002\000\006\022\uffce\025" +
+    "\002\000\006\022\064\025\uffd1\001\002\000\004\027\053" +
+    "\001\002\000\004\025\062\001\002\000\006\022\uffce\025" +
     "\uffce\001\002\000\004\027\uffca\001\002\000\004\027\uffcb" +
-    "\001\002\000\006\022\063\025\uffd1\001\002\000\004\027" +
-    "\053\001\002\000\006\022\uffcf\025\uffcf\001\002\000\032" +
-    "\003\uffd5\004\uffd5\005\uffd5\006\uffd5\007\uffd5\010\uffd5\014" +
-    "\uffd5\015\uffd5\025\uffd5\026\uffd5\027\uffd5\036\uffd5\001\002" +
+    "\001\002\000\032\003\uffd5\004\uffd5\005\uffd5\006\uffd5\007" +
+    "\uffd5\010\uffd5\014\uffd5\015\uffd5\025\uffd5\026\uffd5\027\uffd5" +
+    "\036\uffd5\001\002\000\006\022\064\025\uffd0\001\002\000" +
+    "\004\027\053\001\002\000\006\022\uffcf\025\uffcf\001\002" +
     "\000\004\024\070\001\002\000\032\003\uffd4\004\uffd4\005" +
     "\uffd4\006\uffd4\007\uffd4\010\uffd4\014\uffd4\015\uffd4\025\uffd4" +
     "\026\uffd4\027\uffd4\036\uffd4\001\002\000\004\024\071\001" +
@@ -221,12 +225,12 @@ public class parserC extends java_cup.runtime.lr_parser {
     "\001\001\000\002\001\001\000\002\001\001\000\006\016" +
     "\047\020\045\001\001\000\002\001\001\000\006\027\043" +
     "\030\035\001\001\000\002\001\001\000\002\001\001\000" +
-    "\004\023\066\001\001\000\012\017\054\021\053\022\055" +
+    "\004\023\066\001\001\000\012\017\055\021\053\022\054" +
     "\026\056\001\001\000\002\001\001\000\002\001\001\000" +
     "\002\001\001\000\002\001\001\000\002\001\001\000\002" +
-    "\001\001\000\002\001\001\000\006\021\061\026\056\001" +
+    "\001\001\000\006\021\062\026\056\001\001\000\002\001" +
     "\001\000\002\001\001\000\002\001\001\000\002\001\001" +
-    "\000\002\001\001\000\004\026\063\001\001\000\002\001" +
+    "\000\002\001\001\000\002\001\001\000\004\026\064\001" +
     "\001\000\002\001\001\000\002\001\001\000\002\001\001" +
     "\000\002\001\001\000\014\012\075\024\073\025\076\035" +
     "\074\036\072\001\001\000\002\001\001\000\002\001\001" +
@@ -296,22 +300,120 @@ public class parserC extends java_cup.runtime.lr_parser {
         int numeroV= 0;
         int contadorNodoHoja=0;
         LinkedList<String> listaTokens = new LinkedList<>();
-        LinkedList<String> listaTerminales = new LinkedList<>();
-        LinkedList<String> listaNoTerminales = new LinkedList<>();
+        LinkedList<String> listaIds = new LinkedList<>();
+        LinkedList<String> listaIds1 = new LinkedList<>();
+        LinkedList<arbol> arboles = new LinkedList<>();
         LinkedList<errores> listaErrores = new LinkedList<>();
         LinkedList<tablaSimbolos> listaSimbolos = new LinkedList<>();
+        LinkedList<infoL> infoLengs = new LinkedList<>();
+        LinkedList<tokensLeidos> listaTokensLeidos = new LinkedList<>();
+        String nombreL="";
 
         //errores que se recuperan 
         public void syntax_error(Symbol s){
                 String error ="1. ERROR Sintactico en token: "+s.value+" en linea: " +(s.left + 1 )+" y columna: "+(s.right + 1)+"\n";
         System.out.println(error);        
+            String tipo = "Sintactico";
+            String token = (String) s.value;
+            int fila =s.left+1;
+            int columna= s.right+1;
+            String otro= "Error en el simbolo ";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
         }
     
         //errores que ya no podemos recuperar
         public void unrecovered_syntax_error(Symbol s) throws java.lang.Exception{ 
                 String error ="2. ERROR Sintactico en token: "+s.value+" en linea: " +(s.left + 1 )+" y columna: "+(s.right + 1)+"\n";
         System.out.println(error);        
+            String tipo = "Sintactico";
+            String token = (String) s.value;
+            int fila =s.left+1;
+            int columna= s.right+1;
+            String otro= "Error en el simbolo ";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
         }
+
+        public boolean revisarDato(infoL info){
+            boolean encontrado=false;
+            String columnaBuscar= info.getColumna();
+            for(int i =0; i< infoLengs.size(); i++){
+                String columna = infoLengs.get(i).getColumna();
+                if(columna.equals(columnaBuscar)){
+                    encontrado=true;
+                    break;
+                }else{
+                    encontrado=false;        
+                }
+            }
+            return encontrado;
+        }
+
+      public boolean revisarNombre(){
+            boolean encontrado=false;
+            for(int i =0; i< infoLengs.size(); i++){
+                String columna = infoLengs.get(i).getColumna();
+                if(columna.equals("nombre")){
+                    encontrado=true;
+                    break;
+                }else{
+                    encontrado=false;        
+                }
+            }
+            return encontrado;
+        }
+
+        public boolean buscarIdTNT(String valor ){
+            boolean encontrado=false;
+            for(int i =0; i< listaIds.size(); i++){
+                String columna = listaIds.get(i);
+                if(columna.equals(valor)){
+                    encontrado=true;
+                    break;
+                }else{
+                    encontrado=false;        
+                }
+            }
+            return encontrado;
+        }
+        
+        public boolean verificarIDS(){
+            boolean encontrado=false;
+            for(int i =0; i< listaIds1.size(); i++){
+                String valor = listaIds1.get(i);
+                if(listaTokens.contains(valor)){
+                    encontrado=true;
+                }else{
+                    System.out.println("No se encontro el id del terminal "+valor);
+                    encontrado=false;        
+                    break;
+                }
+            }
+            return encontrado;
+        }
+
+    public void verifiarLenguaje(String nombre, lenguaje l) {
+        //antes verificar si hay errores
+        if(pantallas.PRINCIPAL.listaErroresGeneral.isEmpty()==true){//no hay errores
+            for (int i = 0; i < p1_comp2.P1_COMP2.listaLeguajes.size(); i++) {
+                String nombreL2 = p1_comp2.P1_COMP2.listaLeguajes.get(i).getNombreLenguaje();
+                if (nombreL2.equals(nombre)) {//si coincide eliminamos el anterior               
+                    p1_comp2.P1_COMP2.listaLeguajes.remove(i);
+                    System.out.println("ELIMINANDO LENGUAJE ANTERIOR");
+                } else {
+                }
+            }
+            //agregamos el lenguaje ya habiendo eliminado o no el lenguaje similar cargado anterior
+            p1_comp2.P1_COMP2.listaLeguajes.add(l);
+            JOptionPane.showMessageDialog(null, "Se ha creado el lenguaje-> "+nombre);
+        }else{
+            //existen errores, no se agrega el lenguaje
+            //mostrar errores
+                errores error1 = new errores("Semantico", 0, 0, "-","No se agregara lenguaje, existe errores");
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+        }
+    }
 
 
 /** Cup generated class to encapsulate user supplied action code.*/
@@ -356,10 +458,35 @@ class CUP$parserC$actions {
           case 1: // S ::= INFOS separador CF separador EXPRS1 separador TNTS separador GRAMATICAS 
             {
               Object RESULT =null;
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-8)).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-8)).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-8)).value;
 		int exprs1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-4)).left;
 		int exprs1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-4)).right;
 		Object exprs1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-4)).value;
-		//de exprs1 obtenemos la lista de los automatas
+		//creamos el lenguaje
+        if(i==null){
+        //error semantico en infos
+                errores error1 = new errores("Semantico", 0, 0, "-","Los campos de la info del lenguaje no son correctos");
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+        }else{
+            //verificar si existe el campo nombre, devolver ese dato
+            boolean e= revisarNombre(); 
+            if(e==true){
+            //bien, se verifica el lenguaje
+                LinkedList<errores> listaErrores1 = new LinkedList<>();
+                lenguaje l = new lenguaje( nombreL, arboles,listaTokensLeidos, listaErrores1);
+                //si la lista de lenguajes ya contiene uno con el mismo nombre entonces s elimina y se carga este.
+
+                verifiarLenguaje(nombreL, l);
+
+            }else{
+            //error semantico, no viene campo nombre
+                errores error1 = new errores("Semantico", 0, 0, "-","No existe campo-> nombre de lenguaje");
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+            }
+        }
+        
     
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("S",0, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-8)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -369,7 +496,33 @@ class CUP$parserC$actions {
           case 2: // INFOS ::= INFOS INFO 
             {
               Object RESULT =null;
+		int isleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int isright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object is = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		int i1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int i1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        infoL i = (infoL) i1;
+        boolean encontrado = revisarDato(i);
+        if(encontrado==true){
+        //error semantico
+            String tipo = "Semantico";
+            String token = i1.toString();
+            int fila =i1left;
+            int columna= i1right;
+            String otro= "Error se repiten valores de la informacion del lenguaje";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
+            RESULT =null;
+        }else{
+        //agregar a lista
+            infoL is1 = (infoL) i;
+            infoLengs.add(is1);
+            RESULT = 1;
+        }
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFOS",1, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -378,7 +531,31 @@ class CUP$parserC$actions {
           case 3: // INFOS ::= INFO 
             {
               Object RESULT =null;
+		int i1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int i1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        infoL i = (infoL) i1;
+        boolean encontrado = revisarDato(i);
+        if(encontrado==true){
+            //error semantico
 
+            String tipo = "Semantico";
+            String token = i1.toString();
+            int fila =i1left;
+            int columna= i1right;
+            String otro= "Error se repiten valores de la informacion del lenguaje";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
+            RESULT =null;
+        }else{
+        //agregar a lista
+            infoL is1 = (infoL) i;
+            infoLengs.add(is1);
+            RESULT = 1;
+        }
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFOS",1, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -387,6 +564,14 @@ class CUP$parserC$actions {
           case 4: // INFOS ::= error CF 
             {
               Object RESULT =null;
+		
+            String tipo = "Semantico";
+            String token = " ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en la estructura de informacion de lenguaje";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFOS",1, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -396,7 +581,12 @@ class CUP$parserC$actions {
           case 5: // INFO ::= NOMBRE1 
             {
               Object RESULT =null;
-
+		int nleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int nright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object n = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =n;
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFO",2, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -405,7 +595,12 @@ class CUP$parserC$actions {
           case 6: // INFO ::= VERSION1 
             {
               Object RESULT =null;
-
+		int vleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int vright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object v = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =v;    
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFO",2, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -414,7 +609,12 @@ class CUP$parserC$actions {
           case 7: // INFO ::= AUTOR1 
             {
               Object RESULT =null;
-
+		int aleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int aright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object a = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =a;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFO",2, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -423,7 +623,12 @@ class CUP$parserC$actions {
           case 8: // INFO ::= LANZAMIENTO1 
             {
               Object RESULT =null;
-
+		int lleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int lright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object l = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =l;            
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFO",2, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -432,7 +637,12 @@ class CUP$parserC$actions {
           case 9: // INFO ::= EXTENSION1 
             {
               Object RESULT =null;
-
+		int eleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int eright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object e = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =e;            
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("INFO",2, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -441,7 +651,15 @@ class CUP$parserC$actions {
           case 10: // IDENTS ::= IDENTS IDENT 
             {
               Object RESULT =null;
-
+		int isleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int isright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object is = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =is+" "+i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("IDENTS",29, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -450,7 +668,12 @@ class CUP$parserC$actions {
           case 11: // IDENTS ::= IDENT 
             {
               Object RESULT =null;
-
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("IDENTS",29, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -459,7 +682,12 @@ class CUP$parserC$actions {
           case 12: // IDENT ::= identificador 
             {
               Object RESULT =null;
-
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("IDENT",24, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -468,7 +696,17 @@ class CUP$parserC$actions {
           case 13: // NOMBRE1 ::= nombre dosPuntos IDENTS puntoComa 
             {
               Object RESULT =null;
-
+		int cleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).left;
+		int cright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).right;
+		Object c = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-3)).value;
+		int i1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int i1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object i1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		
+        infoL i= new infoL(c.toString(), i1.toString());
+        nombreL = i1.toString();
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("NOMBRE1",3, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -477,7 +715,16 @@ class CUP$parserC$actions {
           case 14: // VERSION1 ::= version dosPuntos numeroVersion puntoComa 
             {
               Object RESULT =null;
-
+		int cleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).left;
+		int cright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).right;
+		Object c = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-3)).value;
+		int v1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int v1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object v1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		
+        infoL i= new infoL(c.toString(), v1.toString());
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("VERSION1",4, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -486,7 +733,16 @@ class CUP$parserC$actions {
           case 15: // AUTOR1 ::= autor dosPuntos IDENTS puntoComa 
             {
               Object RESULT =null;
-
+		int cleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).left;
+		int cright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).right;
+		Object c = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-3)).value;
+		int i1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int i1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object i1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		
+        infoL i= new infoL(c.toString(), i1.toString());
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("AUTOR1",5, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -495,7 +751,16 @@ class CUP$parserC$actions {
           case 16: // LANZAMIENTO1 ::= lanzamiento dosPuntos numeroEntero puntoComa 
             {
               Object RESULT =null;
-
+		int cleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).left;
+		int cright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).right;
+		Object c = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-3)).value;
+		int n1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int n1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object n1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		
+        infoL i= new infoL(c.toString(), n1.toString());
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("LANZAMIENTO1",6, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -504,7 +769,16 @@ class CUP$parserC$actions {
           case 17: // EXTENSION1 ::= extension dosPuntos IDENTS puntoComa 
             {
               Object RESULT =null;
-
+		int cleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).left;
+		int cright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)).right;
+		Object c = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-3)).value;
+		int e1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int e1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object e1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		
+        infoL i= new infoL(c.toString(), e1.toString());
+        RESULT =i;        
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("EXTENSION1",7, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-3)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -526,7 +800,13 @@ class CUP$parserC$actions {
 		int exprs1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
 		Object exprs1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
 		
-        RESULT =exprs1;
+            String tipo = "Semantico";
+            String token =" ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en codigo java";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
     
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("CF",8, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -536,13 +816,17 @@ class CUP$parserC$actions {
           case 20: // EXPRS1 ::= EXPRS1 EXPRS 
             {
               Object RESULT =null;
-		int n2left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
-		int n2right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
-		Object n2 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
-		//creamos el nodo  [.]
-            //agregamos exprs a la lista de automatas
-            //devolvemos la lista
-            
+		int a2left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int a2right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object a2 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		//Agregamos el arbol
+    if(a2==null){
+        //no se agrega el arbol
+    }else{
+        //agregamos el arbol
+                    arbol a =  (arbol)a2;
+                    arboles.add(a);
+        }            
     
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("EXPRS1",23, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -552,13 +836,17 @@ class CUP$parserC$actions {
           case 21: // EXPRS1 ::= EXPRS 
             {
               Object RESULT =null;
-		int exprsleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
-		int exprsright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
-		Object exprs = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		int a1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int a1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object a1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
 		 
-            //agregamos  exprs a la lista de automatas
-            //devolvemos la lista
-                
+        if(a1==null){
+            //no se agrega el arbol
+        }else{
+            //agregamos el arbol
+                    arbol a =  (arbol)a1;
+                    arboles.add(a);
+        }                            
     
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("EXPRS1",23, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -581,7 +869,7 @@ class CUP$parserC$actions {
             //por cada expresion se crea un arbol/automata asi se reconoce el tipo de dato que se lee y el nombre del
             
                 if(ers==null ){//marcar como error semantico
-            
+                    RESULT= null;            
                 }else{//aqui se concatena al final con simbolo de aceptacion
                     
                     nodo n11 =  (nodo)ers;
@@ -613,6 +901,7 @@ class CUP$parserC$actions {
                     //limpiamos lista de simbolos
                     listaSimbolos.clear();
                     contadorNodoHoja=0;
+                    RESULT= a1;
                 }
         }
     
@@ -625,6 +914,13 @@ class CUP$parserC$actions {
             {
               Object RESULT =null;
 		 
+            String tipo = "Semantico";
+            String token = " ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en estructura de expresiones regulares";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
     
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("EXPRS",21, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -644,16 +940,18 @@ class CUP$parserC$actions {
             
         //verificacion de ide del token
         if(encontrado==true){ //marcar error pues ya existe
-            String tipo = "SEMANTICO";
+
+            String tipo = "Semantico";
             String token = id1.toString();
             int fila =id1left;
             int columna= id1right;
-            String otro= "Error en identificador de expresion regular, ya existe";
-            errores e  = new errores(tipo,fila,columna,token, otro);
-            listaErrores.add(e);
-           RESULT= null;
+            String otro= "Error se repite el identificador ";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
+           RESULT= null;
         }else{
+            listaTokens.add(id1.toString());
             RESULT = id1.toString();
         }
 
@@ -989,7 +1287,35 @@ class CUP$parserC$actions {
           case 44: // TNT ::= TIPOT SIMBOLOS puntoComa 
             {
               Object RESULT =null;
+		int tleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-2)).left;
+		int tright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-2)).right;
+		Object t = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-2)).value;
+		int sleft = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).left;
+		int sright = ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)).right;
+		Object s = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.elementAt(CUP$parserC$top-1)).value;
+		
+        //verificar si terminal esta en tokens
+        if(t.toString().equals("terminal")){
+            boolean encontrado = verificarIDS();
+            if(encontrado==false){
+                //error no se encontro un terminal declarado, marcar error semantico
+                String tipo = "Semantico";
+                String token = " ";
+                int fila =0;
+                int columna= 0;
+                String otro= "Error existen terminales que no se declararon en E.R";
+                errores error1 = new errores(tipo, fila, columna, token,otro);
+                pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
+            }else{
+            //todos los terminales se habian declarado en ERS
+            }
+        }
+        //si es no terminal, ya se ha verificado que no se repitan
+        else{}
+        //limpiar listaDeIds
+        listaIds.clear();
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("TNT",12, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-2)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -998,6 +1324,15 @@ class CUP$parserC$actions {
           case 45: // TNT ::= error GRAMATICA 
             {
               Object RESULT =null;
+		
+            String tipo = "Semantico";
+            String token = " ";
+            int fila =0;
+            int columna= 0;
+            String otro= "Error en estructura de gramatica";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
+
 
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("TNT",12, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
@@ -1007,7 +1342,12 @@ class CUP$parserC$actions {
           case 46: // TIPOT ::= terminal1 
             {
               Object RESULT =null;
-
+		int t1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int t1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object t1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT= t1;
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("TIPOT",14, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -1016,26 +1356,41 @@ class CUP$parserC$actions {
           case 47: // TIPOT ::= noTerminal 
             {
               Object RESULT =null;
-
+		int t1left = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int t1right = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object t1 = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT= t1;
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("TIPOT",14, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 48: // SIMBOLOS ::= TIPOS IDENTIFICADORES1 
+          case 48: // SIMBOLOS ::= IDENTIFICADORES1 
             {
               Object RESULT =null;
-
-              CUP$parserC$result = parser.getSymbolFactory().newSymbol("SIMBOLOS",13, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =i;
+    
+              CUP$parserC$result = parser.getSymbolFactory().newSymbol("SIMBOLOS",13, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
 
           /*. . . . . . . . . . . . . . . . . . . .*/
-          case 49: // SIMBOLOS ::= IDENTIFICADORES1 
+          case 49: // SIMBOLOS ::= TIPOS IDENTIFICADORES1 
             {
               Object RESULT =null;
-
-              CUP$parserC$result = parser.getSymbolFactory().newSymbol("SIMBOLOS",13, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =i;
+    
+              CUP$parserC$result = parser.getSymbolFactory().newSymbol("SIMBOLOS",13, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-1)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
 
@@ -1043,7 +1398,30 @@ class CUP$parserC$actions {
           case 50: // IDENTIFICADORES1 ::= IDENTIFICADORES1 coma IDENTIFICADOR1 
             {
               Object RESULT =null;
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        String valor = i.toString();
+        boolean encontrado = buscarIdTNT(valor);
+        if(encontrado==true){
+            String tipo = "Semantico";
+            String token = i.toString();
+            int fila =ileft;
+            int columna= iright;
+            String otro= "Error ya se ha declarado ese identificador";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
+        //error semantico
+            RESULT=null;
+        }
+        else{
+            listaIds.add(i.toString());
+            listaIds1.add(i.toString());
+            RESULT =1;
+        }
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("IDENTIFICADORES1",15, ((java_cup.runtime.Symbol)CUP$parserC$stack.elementAt(CUP$parserC$top-2)), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -1052,7 +1430,30 @@ class CUP$parserC$actions {
           case 51: // IDENTIFICADORES1 ::= IDENTIFICADOR1 
             {
               Object RESULT =null;
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        String valor = i.toString();
+        boolean encontrado = buscarIdTNT(valor);
+        if(encontrado==true){
+        //error semantico
+            String tipo = "Semantico";
+            String token = i.toString();
+            int fila =ileft;
+            int columna= iright;
+            String otro= "Error ya se ha declarado ese identificador";
+            errores error1 = new errores(tipo, fila, columna, token,otro);
+            pantallas.PRINCIPAL.listaErroresGeneral.add(error1);
 
+            RESULT=null;
+        }
+        else{
+            listaIds.add(i.toString());
+            listaIds1.add(i.toString());
+            RESULT =1;
+        }
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("IDENTIFICADORES1",15, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
@@ -1061,7 +1462,12 @@ class CUP$parserC$actions {
           case 52: // IDENTIFICADOR1 ::= identificador 
             {
               Object RESULT =null;
-
+		int ileft = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).left;
+		int iright = ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()).right;
+		Object i = (Object)((java_cup.runtime.Symbol) CUP$parserC$stack.peek()).value;
+		
+        RESULT =i;
+    
               CUP$parserC$result = parser.getSymbolFactory().newSymbol("IDENTIFICADOR1",20, ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), ((java_cup.runtime.Symbol)CUP$parserC$stack.peek()), RESULT);
             }
           return CUP$parserC$result;
